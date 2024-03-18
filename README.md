@@ -1,6 +1,6 @@
 # salt
 
-A new Flutter project.
+Front end for salt doorknocking app.
 
 ## Getting Started
 
