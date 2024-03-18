@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:salt/screens/address_lists.dart';
+import 'package:salt/services/auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -13,12 +14,9 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailTextEditingController = TextEditingController(text: '');
   final TextEditingController _passwordTextEditingController = TextEditingController(text: '');
   final _formKey = GlobalKey<FormState>();
+  String _email = '';
+  String _password = '';
   
-  @override
-  void setState(VoidCallback fn) {
-    // TODO: implement setState
-    super.setState(fn);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +38,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   icon: Icon(Icons.person),
                   labelText: 'Email',
                 ),
+                onSaved: (newValue) {
+                  setState(() {
+                    _email = newValue ?? '';
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
                 controller: _emailTextEditingController,
               ),
               TextFormField(            
@@ -47,6 +56,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   icon: Icon(Icons.password),
                   labelText: 'Password',
                 ),
+                onSaved: (newValue) {
+                  setState(() {
+                    _password = newValue ?? '';
+                  });
+                },
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter some text';
+                  }
+                  return null;
+                },
                 obscureText: true,
                 enableSuggestions: false,
                 controller: _emailTextEditingController,
@@ -54,15 +74,24 @@ class _LoginScreenState extends State<LoginScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: ElevatedButton(
-                  onPressed: () {
-                    // if (_formKey.currentState!.validate()) {
-                    //   ScaffoldMessenger.of(context).showSnackBar(
-                    //     const SnackBar(content: Text('Processing Data')),
-                    //   );
-                    // }
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-                      return const AddressListsScreen();
-                    },));
+                  onPressed: () async {
+                    if (_formKey.currentState!.validate()) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Processing')),
+                      );
+                      final bool login = await AuthService().login(_email, _password);
+                      if (login) {
+                        
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                          return const AddressListsScreen();
+                        },));
+                      } else {
+                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Login Failed')),
+                      );
+                      }
+                    }
                   },
                   child: const Text('Submit'),
                 ),
