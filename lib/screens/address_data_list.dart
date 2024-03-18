@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
+import 'package:salt/screens/address_data_form.dart';
 
 class AddressDataList extends StatefulWidget {
   const AddressDataList({super.key});
@@ -84,11 +87,11 @@ class _AddressDataListState extends State<AddressDataList> {
 
   List<Map> searchData = [];
   TextEditingController _editingController = TextEditingController();
-
+  
   @override
-  void setState(VoidCallback fn) {
+  void initState() {
     searchData = testData;
-    super.setState(fn);
+    super.initState();
   }
 
   void filterSearchResults(String query) {
@@ -107,7 +110,7 @@ class _AddressDataListState extends State<AddressDataList> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Enter Data For Address'),
+        title: const Text('Tap To Visit & Enter Notes'),
       ),
       body:  
         // Need to add a search function
@@ -136,21 +139,54 @@ class _AddressDataListState extends State<AddressDataList> {
                   final item = searchData[index];
                   String latestVisit = 'Not Yet Doorknocked';            
                   List addressVisits = item['address_visits'];
+                  String rating = '?';
             
                   if (addressVisits.isNotEmpty) {
                     final Map firstVisit = addressVisits[0];
                     final DateTime timeVisited = DateTime.parse(firstVisit['created_at']);
-                    final DateFormat dateDisplay = DateFormat.yMd().add_jm();
+                    initializeDateFormatting();
+                    final DateFormat dateDisplay = DateFormat.yMd('en_AU');
             
                     latestVisit = dateDisplay.format(timeVisited);
+                    rating = firstVisit['doorknock_response_id'].toString();
                   }
             
                   return ListTile(
                     title: Text(item["address"], style: Theme.of(context).textTheme.headlineSmall,),
-                    subtitle: Text(latestVisit, style: Theme.of(context).textTheme.labelSmall,),
-                    trailing: Text('Postcode:\n${item["postcode"].toString()}', style: Theme.of(context).textTheme.labelSmall, textAlign: TextAlign.center,),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('Visited: $latestVisit | rated: $rating', style: Theme.of(context).textTheme.labelSmall,),
+                        if (addressVisits.isNotEmpty) ElevatedButton(
+                          style: ElevatedButton.styleFrom(side: BorderSide(color: Theme.of(context).primaryColor)),
+                          onPressed: () {
+                          
+                          },
+                          child: const Text('View Visits'),
+                        ),
+                      ],
+                    ),
+                    trailing: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Postcode:\n${item["postcode"].toString()}', style: Theme.of(context).textTheme.labelSmall, textAlign: TextAlign.center,),
+                        const Icon(Icons.chevron_right)
+                        // SafeArea(
+                        //   child: TextButton(
+                        //     style: TextButton.styleFrom(side: BorderSide(color: Theme.of(context).primaryColor)),
+                        //     onPressed: () {
+                            
+                        //     },
+                        //     child: const Text('Start'),
+                        //   ),
+                        // ),
+                      ],
+                    ),
+                    
                     onTap: () {
-                      
+                      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+                          return const AddressDataForm();
+                      },));
                     },
                   );
                 },
